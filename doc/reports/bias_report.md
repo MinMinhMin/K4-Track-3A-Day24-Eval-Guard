@@ -1,40 +1,57 @@
 # Đánh giá LLM Judge Phase B
 
-Nhóm: {{Tên nhóm}}
+Nhóm: The Fellowship of the Ring (K4 Track 3A).
 
-Người phụ trách: {{Họ tên và MSSV}}
+Người phụ trách PR dự kiến: VŨ ĐỨC MINH — 2A202602895.
 
-Nguồn: `artifacts/judge_results.json`; run timestamp: {{created_at}}.
-Models generation/judge: {{metadata.models.generation và metadata.models.judge}}.
+## Bằng chứng và nguồn dữ liệu
 
-## Năm cặp A/B và hai lượt
+Artifact live `artifacts/judge_results.json` được tạo lúc
+`2026-10-12T14:32:40.781218+00:00` UTC, với judge model `gpt-4o-mini` và
+generation model của answers `gpt-4o-mini-2024-07-18`. SHA-256 của answers,
+test set và human labels khớp các file nguồn. Năm cặp dùng A từ pipeline answer,
+B từ supplied `model_answer`, reference từ `ground_truth`; calibration dùng
+đúng 10 supplied `model_answer` gốc. Prompt judge không nhận `human_label` hay
+`human_note`.
 
-Nguồn cố định: A từ artifacts/answers_50q.json:answer; B từ
-fixtures/human_labels_10q.json:model_answer; reference từ fixtures/test_set_50q.json:ground_truth.
-Ids: 1, 5, 12, 21, 41. Không đổi nguồn sau khi xem kết quả judge.
+## Pairwise judge: năm cặp, hai thứ tự
 
-{{Điền 5 rows: id, candidate A/B, winner_pass1, winner_pass2 đã quy về A/B gốc,
-final_winner, position_consistent, reasoning và scores của hai lượt.}}
+| Question ID | Winner lượt 1 | Winner lượt 2 sau map về A/B gốc | Kết quả cuối | Nhận xét |
+|---:|---|---|---|---|
+| 1 | B | B | B | Đáp án B nêu rõ kỳ nghỉ có lương. |
+| 5 | A | A | A | CEO được xác định đúng cho thiết bị 55 triệu. |
+| 12 | A | tie | tie | Bất đồng khi đảo thứ tự; hai câu đều đúng, một câu đầy đủ hơn. |
+| 21 | B | B | B | Answer A là “Không tìm thấy”, B trả lời đúng hai ý. |
+| 41 | A | A | A | Answer A gồm policy 2023 và 2024; B chỉ nêu mức cũ. |
 
-Position bias count/rate: {{count và rate}}.
-Verbosity win rate: {{giá trị}}; decisive cases: {{số lượng}}.
+Chỉ cặp 12 đổi quyết định sau khi hoán đổi thứ tự: 1/5 = 20% position
+instability. Final winner theo quy tắc là tie ở cặp bất đồng. Lý do của lượt 2
+được lưu nguyên theo nhãn trong thứ tự đã swap; winner và scores của lượt đó
+được map về danh tính A/B ban đầu. Khi đọc reasoning lượt 2, cần diễn giải theo
+thứ tự đã swap.
 
-{{Giải thích các case không nhất quán và các winner dài hơn. Phân biệt dấu hiệu
-thống kê với kết luận nguyên nhân bias dựa trên nội dung.}}
+## Verbosity bias
 
-## Calibration đúng model_answer
+| Chỉ số | Giá trị |
+|---|---:|
+| Cặp có kết quả quyết định | 4/5 |
+| A thắng và A dài hơn | 2 |
+| B thắng và B dài hơn | 2 |
+| Winner dài hơn / cặp quyết định | 4/4 = 1.00 |
 
-Helper đánh giá đúng question/model_answer đang có trong fixtures/human_labels_10q.json;
-không lấy answer mới của pipeline. Prompt chỉ nhận question, answer, reference.
-Không gửi human_label, human_note hoặc phân bố nhãn human vào prompt.
+Theo định nghĩa của lab, cả bốn kết quả quyết định đều nghiêng về đáp án dài
+hơn; đây là dấu hiệu verbosity đáng theo dõi, không chứng minh judge chọn sai
+trong mọi cặp. Position instability thấp trong mẫu năm cặp, nhưng verbosity
+rate cao. Cần review thủ công trên tập lớn hơn và bảo đảm prompt ưu tiên đúng,
+đủ ý theo reference thay vì độ dài.
 
-{{Điền 10 rows theo đúng thứ tự JSON: question_id, model_answer gốc, nhãn judge
-0/1, reasoning, human_label và agree. Nhãn human chỉ dùng sau judge để đối chiếu.}}
+## Calibration với nhãn người
 
-Cohen’s κ: {{giá trị}}.
-Observed/chance agreement và diễn giải: {{phép tính và nhận xét}}.
+| Question IDs | Judge labels | Human labels | Observed agreement | Chance agreement | Cohen’s κ |
+|---|---|---|---:|---:|---:|
+| 1, 5, 12, 21, 23, 29, 33, 41, 46, 50 | 1, 0, 1, 1, 1, 0, 1, 0, 1, 0 | 1, 0, 1, 1, 1, 0, 1, 0, 1, 0 | 10/10 = 1.00 | 0.52 | 1.00 |
 
-## Giới hạn và cách dùng judge
-
-{{Nêu model/prompt, số cặp và số nhãn nhỏ; diễn giải nếu κ chưa đạt >0.6.
-Nêu case lệch với human, cách kiểm chứng, và việc không xem judge là đáp án tuyệt đối.}}
+κ = (1.00 − 0.52) / (1 − 0.52) = 1.00. Điều kiện bonus Phase B (κ > 0.6)
+đạt trên mười nhãn được cung cấp (+3). Mẫu nhỏ và kết quả hoàn hảo trên bộ này
+không chứng minh độ tin cậy tổng quát; cần đánh giá trên câu mới, giữ nhãn người
+ngoài prompt judge và kiểm tra các bất đồng theo từng loại câu.

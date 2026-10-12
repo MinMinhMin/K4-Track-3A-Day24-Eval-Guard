@@ -1,4 +1,5 @@
 """Student logic uses mock SDK; never invokes the live judge."""
+import json
 from unittest.mock import Mock
 
 import pytest
@@ -16,6 +17,22 @@ def test_pairwise_uses_json_judge(openai_client):
     call = openai_client.chat.completions.create.call_args.kwargs
     assert REF in str(call["messages"])
     assert call["response_format"] == {"type":"json_object"}
+
+
+@pytest.mark.parametrize("payload", [
+    "not json",
+    {"winner":"C","reasoning":"bad winner","scores":{"A":.9,"B":.2}},
+    {"winner":"A","reasoning":" ","scores":{"A":.9,"B":.2}},
+    {"winner":"A","reasoning":"ok","scores":{"A":True,"B":.2}},
+    {"winner":"A","reasoning":"ok","scores":{"A":1.1,"B":.2}},
+    {"winner":"tie","reasoning":"ok","scores":{"A":.9}},
+])
+def test_pairwise_rejects_malformed_or_invalid_result(openai_client, payload):
+    content = payload if isinstance(payload, str) else json.dumps(payload)
+    openai_client.chat.completions.create.return_value = Mock(
+        choices=[Mock(message=Mock(content=content))])
+    with pytest.raises((ValueError, TypeError, json.JSONDecodeError)):
+        phase.pairwise_judge(Q,A,B,reference=REF)
 
 
 @pytest.mark.parametrize("second_raw,expected,consistent", [("B","A",True),("A","tie",False)])
@@ -40,6 +57,15 @@ def test_kappa_exact(judge,human,expected):
     assert phase.cohen_kappa(judge,human) == pytest.approx(expected)
 
 
+@pytest.mark.parametrize("judge,human", [
+    ([1], []), ([], []), ([True], [1]), ([0.0], [0]), ([2], [0]), (["1"], [1]),
+    ([1,1],[1,1]),
+])
+def test_kappa_rejects_misaligned_or_nonbinary_labels(judge,human):
+    with pytest.raises((ValueError, TypeError)):
+        phase.cohen_kappa(judge,human)
+
+
 def test_bias_known_counts():
     rows = [
         phase.JudgeResult(Q,A,B,"A","A","A","r1","r2",True),
@@ -51,4 +77,11 @@ def test_bias_known_counts():
 
 
 def test_bias_empty():
-    assert phase.bias_report([])["total_judged"] == 0
+    result=phase.bias_report([])
+    assert result["total_judged"] == 0
+    assert result["position_bias_rate"] == 0
+    assert result["position_bias_count"] == 0
+    assert result["verbosity_bias"] == 0
+    assert result["verbosity_details"] == {
+        "a_wins_a_longer":0,"b_wins_b_longer":0,"total_decisive":0}
+    assert result["interpretation"].strip()
