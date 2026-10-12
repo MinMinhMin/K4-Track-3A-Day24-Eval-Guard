@@ -62,6 +62,10 @@ def test_input_uses_rail_decision(blocked):
     assert rails.generate_async.call_args.kwargs["options"]["rails"] == ["input"]
 
 
+
+
+
+
 @pytest.mark.parametrize("blocked",[True,False])
 def test_output_checks_supplied_answer(blocked):
     response="refusal" if blocked else "answer"
@@ -73,6 +77,8 @@ def test_output_checks_supplied_answer(blocked):
     assert result["final_answer"]==response
     assert rails.generate_async.call_args.kwargs["messages"][-1]["content"]=="answer"
     assert rails.generate_async.call_args.kwargs["options"]["rails"]==["output"]
+
+
 
 
 @pytest.fixture(scope="module")
@@ -115,3 +121,7 @@ def test_latency_real_warmup_and_sample_count(monkeypatch):
     validate_latency(result)
     assert pii.call_count==22 and nemo.await_count==22
     assert result["input_guard_ms"]["p95"]==pytest.approx(4)
+
+
+
+

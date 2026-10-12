@@ -26,6 +26,12 @@ def test_group_exact_counts():
     assert [len(groups[d]) for d in ("factual","multi_hop","adversarial")] == [20,20,10]
 
 
+def test_group_keeps_empty_keys_and_input_rows():
+    rows = [{"id": 9, "distribution": "multi_hop"}]
+    groups = group_by_distribution(rows)
+    assert groups == {"factual": [], "multi_hop": rows, "adversarial": []}
+
+
 def test_ragas_adapter_preserves_rows(monkeypatch):
     questions = load_test_set_50q()
     answers = [{**q, "answer": "A", "contexts": ["C"]} for q in questions]
@@ -43,6 +49,11 @@ def test_ragas_adapter_preserves_rows(monkeypatch):
     assert results[0].faithfulness == .8
     evaluate.assert_called_once()
     assert list(evaluate.call_args.args[0]) == [q["question"] for q in questions]
+
+
+def test_ragas_adapter_rejects_wrong_number_of_answers():
+    with pytest.raises(ValueError, match="50"):
+        run_ragas_50q(load_test_set_50q()[:-1])
 
 
 def test_bottom_nonempty_sorted_complete(dummy_results):
@@ -82,3 +93,18 @@ def test_weakest_distribution_is_quality_not_size():
             results.append(RagasResult(len(results)+1,dist,"Q","A",["C"],"GT",
                                        value,value,value,value))
     assert cluster_analysis(results)["dominant_failure_distribution"] == "adversarial"
+
+
+def test_cluster_analysis_ignores_empty_distributions():
+    row = RagasResult(1, "multi_hop", "Q", "A", ["C"], "GT", .5, .5, .5, .5)
+    result = cluster_analysis([row])
+    assert result["distribution_avg_scores"] == {"multi_hop": .5}
+    assert result["dominant_failure_distribution"] == "multi_hop"
+
+
+def test_cluster_analysis_empty_results_does_not_invent_a_weakest_group():
+    result = cluster_analysis([])
+    assert result["distribution_avg_scores"] == {}
+    assert result["dominant_failure_distribution"] is None
+    assert result["dominant_failure_metric"] is None
+    assert result["insight"].strip()
