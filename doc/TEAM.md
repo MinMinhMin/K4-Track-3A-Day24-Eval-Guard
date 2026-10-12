@@ -10,9 +10,9 @@ Trưởng nhóm/người nộp: chưa được chỉ định.
 Ngày cập nhật bản local: 2026-10-12, Asia/Ho_Chi_Minh (UTC+07:00). Ngày lab và
 deadline chính thức cần đối chiếu thông báo lớp.
 
-Commit dùng để chấm: chưa có. Theo yêu cầu của nhóm, trong phiên này không tạo
-commit, branch hoặc PR. Bản local và bốn snapshot là working trees, không phải
-bằng chứng lịch sử Git.
+Commit dùng để chấm: `0dc21d20ec64c1d2bed1f47e38fb1bc77237392a` (nhánh `main`,
+merge từ nhánh `tung`). Commit ghi SHA này vào TEAM được tạo sau đó nên không
+nằm trong SHA trên.
 
 ## Thành viên và phân công PR dự kiến
 
