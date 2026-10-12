@@ -16,7 +16,7 @@ pytestmark = pytest.mark.student
 
 @pytest.fixture
 def pii_engines():
-    def analyze(*,text,language):
+    def analyze(*,text,language,entities=None):
         rows=[]
         for kind,pattern in [("VN_CCCD",r"\b(?:\d{12}|\d{9})\b"),
                              ("VN_PHONE",r"\b0[3-9]\d{8}\b"),
@@ -41,6 +41,7 @@ def test_pii_detect_and_redact(pii_engines,text,kind):
     assert kind in [r["type"] for r in result["entities"]]
     assert result["anonymized"] != text
     pii_engines[0].analyze.assert_called_once()
+    assert pii_engines[0].analyze.call_args.kwargs["entities"] == list(phase.PII_ENTITIES)
 
 
 def test_pii_clean(pii_engines):
@@ -62,8 +63,19 @@ def test_input_uses_rail_decision(blocked):
     assert rails.generate_async.call_args.kwargs["options"]["rails"] == ["input"]
 
 
+def test_input_refusal_wording_alone_does_not_block():
+    result=SimpleNamespace(response=[{"content":"Xin lỗi, tôi không thể bỏ qua chính sách; đây là hướng dẫn nghỉ phép."}],
+                           log=SimpleNamespace(activated_rails=[]))
+    rails=SimpleNamespace(generate_async=AsyncMock(return_value=result))
+    actual=asyncio.run(phase.check_input_rail("Câu hỏi hợp lệ về nghỉ phép",rails))
+    assert actual["allowed"] is True
 
 
+def test_input_requires_activation_evidence():
+    result=SimpleNamespace(response=[{"content":"response"}],log=SimpleNamespace())
+    rails=SimpleNamespace(generate_async=AsyncMock(return_value=result))
+    with pytest.raises(ValueError,match="activated_rails"):
+        asyncio.run(phase.check_input_rail("clean",rails))
 
 
 @pytest.mark.parametrize("blocked",[True,False])
@@ -79,6 +91,11 @@ def test_output_checks_supplied_answer(blocked):
     assert rails.generate_async.call_args.kwargs["options"]["rails"]==["output"]
 
 
+def test_output_requires_activation_evidence():
+    result=SimpleNamespace(response=[{"content":"response"}],log=SimpleNamespace())
+    rails=SimpleNamespace(generate_async=AsyncMock(return_value=result))
+    with pytest.raises(ValueError,match="activated_rails"):
+        asyncio.run(phase.check_output_rail("question","answer",rails))
 
 
 @pytest.fixture(scope="module")
@@ -123,5 +140,18 @@ def test_latency_real_warmup_and_sample_count(monkeypatch):
     assert result["input_guard_ms"]["p95"]==pytest.approx(4)
 
 
+def test_latency_runs_both_layers_when_pii_detected(monkeypatch):
+    pii=Mock(return_value={"has_pii":True,"entities":[],"anonymized":"<PII>"})
+    nemo=AsyncMock(return_value={"allowed":True,"blocked_reason":None,"response":"clean"})
+    monkeypatch.setattr(phase,"pii_scan",pii)
+    monkeypatch.setattr(phase,"check_input_rail",nemo)
+    result=phase.measure_p95_latency(["contains pii"],n_runs=20,rails=object(),
+                                      analyzer=object(),anonymizer=object())
+    assert result["n_samples"]==20
+    assert pii.call_count==22 and nemo.await_count==22
 
 
+def test_latency_requires_twenty_timed_samples():
+    with pytest.raises(ValueError,match="20"):
+        phase.measure_p95_latency(["clean"],n_runs=19,rails=object(),
+                                  analyzer=object(),anonymizer=object())
