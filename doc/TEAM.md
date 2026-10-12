@@ -5,7 +5,7 @@ Tên nhóm chính thức: The Fellowship of the Ring.
 Repo chung: thư mục local `K4-Track-3A-Day24-Eval-Guard`; URL remote chưa được
 cung cấp.
 
-Trưởng nhóm/người nộp: chưa được chỉ định.
+Trưởng nhóm/người nộp: Mai Phan Anh Tùng
 
 Ngày cập nhật bản local: 2026-10-12, Asia/Ho_Chi_Minh (UTC+07:00). Ngày lab và
 deadline chính thức cần đối chiếu thông báo lớp.
@@ -14,18 +14,19 @@ Commit dùng để chấm: `0dc21d20ec64c1d2bed1f47e38fb1bc77237392a` (nhánh `m
 merge từ nhánh `tung`). Commit ghi SHA này vào TEAM được tạo sau đó nên không
 nằm trong SHA trên.
 
-## Thành viên và phân công PR dự kiến
+## Thành viên và đóng góp (commit / PR thật)
 
-| STT | Họ và tên | MSSV | Vai trò / công việc thật hiện có | Bằng chứng |
+| STT | Họ và tên | MSSV | Vai trò / công việc | Bằng chứng (commit / PR) |
 |---|---|---|---|---|
-| 1 | NGUYỄN VŨ QUANG ANH | 2A202602805 | Chủ sở hữu PR1 dự kiến: Phase A và evaluator provenance; thành viên tự thực hiện và chịu trách nhiệm, AI chỉ hỗ trợ tham khảo | PR/commit và review của thành viên chưa có |
-| 2 | VŨ ĐỨC MINH | 2A202602895 | Chủ sở hữu PR2 dự kiến: Phase B judge và calibration; thành viên tự thực hiện và chịu trách nhiệm, AI chỉ hỗ trợ tham khảo | PR/commit và review của thành viên chưa có |
-| 3 | NGUYỄN NGỌC VĨNH | 2A202602833 | Chủ sở hữu PR3 dự kiến: Phase C guardrails và latency; thành viên tự thực hiện và chịu trách nhiệm, AI chỉ hỗ trợ tham khảo | PR/commit và review của thành viên chưa có |
-| 4 | MAI PHAN ANH TÙNG | 2A202602980 | Chủ sở hữu PR4 dự kiến: TEAM, blueprint và tích hợp; thành viên tự thực hiện và chịu trách nhiệm, AI chỉ hỗ trợ tham khảo | PR/commit và review của thành viên chưa có |
+| 1 | NGUYỄN VŨ QUANG ANH | 2A202602805 | PR1: Phase A (RAGAS) và evaluator provenance (`m4_eval.py`, `phase_a_ragas.py`), artifact `ragas_50q.json`, `failure_clusters.md` | Commit `2fa8afa` (nhánh `quanganh`), PR #1, merge `6d6b64a` |
+| 2 | VŨ ĐỨC MINH | 2A202602895 | PR2: Phase B judge và calibration (`phase_b_judge.py`), artifact `judge_results.json`, `bias_report.md` | Commit `3afad9f` (nhánh `vuducminh`), PR #2, merge `034edc8` |
+| 3 | NGUYỄN NGỌC VĨNH | 2A202602833 | PR3: Phase C guardrails và latency (`phase_c_guard.py`, `guardrails/config.yml`), artifact `guard_results.json` | Commit `4617642` (nhánh `nguyenngocvinh`), PR #3, merge `b39e087` |
+| 4 | MAI PHAN ANH TÙNG | 2A202602980 | PR4: TEAM, blueprint và tích hợp (`TEAM.md`, `blueprint.md`, `PR_SEQUENCE.md`) | Commit `9342dca` (nhánh `tung`), merge trực tiếp `0dc21d2` vào `main`, commit ghi SHA `0519d01`; chưa mở PR #4 |
 
-Mỗi thành viên tự thực hiện và xem lại phần được giao, tạo commit và PR theo thứ tự trong `doc/PR_SEQUENCE.md`, rồi cập nhật
-bằng chứng thực tế. Bảng trên mô tả phân công dự kiến, không khẳng định bốn
-thành viên đã làm hoặc đã merge PR.
+Nguồn: lịch sử Git của repo `MinMinhMin/K4-Track-3A-Day24-Eval-Guard`
+(`git log --all`); số PR lấy từ tiêu đề các merge commit. Tên tác giả trên Git
+của một số commit là tài khoản GitHub, không trùng họ tên trong bảng. Commit
+`0dc21d2` là bản dùng để chấm, được merge từ nhánh `tung` mà không qua PR.
 
 ## Môi trường và chuẩn bị
 
@@ -64,17 +65,16 @@ Cách kiểm chứng đầu ra có sự hỗ trợ của AI:
 
 ## INDIVIDUAL
 
-Các mục dưới ghi người phụ trách PR dự kiến và tình trạng bằng chứng hiện có.
-Từng thành viên cần tự bổ sung phần học được và hoạt động thực tế trước khi nhóm
-nộp; trải nghiệm cá nhân phải do chính thành viên viết.
+Các mục dưới ghi người phụ trách PR và bằng chứng commit/PR thật.
+Từng thành viên cần tự bổ sung phần học được trước khi nhóm nộp; trải nghiệm cá nhân phải do chính thành viên viết.
 
 ### NGUYENVUQUANGANH-2A202602805
 
-- Phần được giao: PR1 dự kiến, Phase A Tasks 1–4 và m4 evaluator provenance.
-- Thực tế đã làm: thành viên tự thực hiện phần được giao; thông tin chi tiết do
-  thành viên tự bổ sung cùng commit/PR.
+- Phần được giao: PR1, Phase A Tasks 1–4 và m4 evaluator provenance.
+- Thực tế đã làm: thành viên tự thực hiện phần được giao; xem commit/PR trong bảng
+  đóng góp.
 - Bằng chứng: artifact Phase A live có 50 hàng, bốn metric và metadata model;
-  report phân tích bottom 10, matrix và bonus theo JSON. Chưa có commit hoặc PR.
+  report phân tích bottom 10, matrix và bonus theo JSON. Commit `2fa8afa`, PR #1.
 - Cách kiểm tra: unit tests offline của Phase A/m4 và đối chiếu input hashes,
   scores, bottom 10 cùng matrix trong artifact.
 - Điều đã học: thành viên tự ghi sau khi review và thực hiện phần việc.
@@ -82,13 +82,12 @@ nộp; trải nghiệm cá nhân phải do chính thành viên viết.
 
 ### VUDUCMINH-2A202602895
 
-- Phần được giao: PR2 dự kiến, Phase B pairwise judge, swap-and-average, κ và
+- Phần được giao: PR2, Phase B pairwise judge, swap-and-average, κ và
   bias report.
-- Thực tế đã làm: thành viên tự thực hiện phần được giao; thông tin chi tiết do
-  thành viên tự bổ sung cùng commit/PR.
+- Thực tế đã làm: thành viên tự thực hiện phần được giao; xem commit/PR trong bảng
+  đóng góp.
 - Bằng chứng: artifact Phase B live có 5 cặp, 10 binary judgments, κ=1.00,
-  position instability 20% và verbosity rate 100% trên 4 kết quả quyết định.
-  Chưa có commit hoặc PR.
+  position instability 20% và verbosity rate 100% trên 4 kết quả quyết định. Commit `3afad9f`, PR #2.
 - Cách kiểm tra: unit tests offline với mock, sau đó đối chiếu pair sources,
   label alignment và phép tính κ/bias trong artifact.
 - Điều đã học: thành viên tự ghi sau khi review và thực hiện phần việc.
@@ -96,12 +95,12 @@ nộp; trải nghiệm cá nhân phải do chính thành viên viết.
 
 ### NGUYENNGOCVINH-2A202602833
 
-- Phần được giao: PR3 dự kiến, Presidio, NeMo input/output rails, adversarial
+- Phần được giao: PR3, Presidio, NeMo input/output rails, adversarial
   suite và latency.
-- Thực tế đã làm: thành viên tự thực hiện phần được giao; thông tin chi tiết do
-  thành viên tự bổ sung cùng commit/PR.
+- Thực tế đã làm: thành viên tự thực hiện phần được giao; xem commit/PR trong bảng
+  đóng góp.
 - Bằng chứng: artifact C cuối có 20/20 attacks, 8/8 clean controls, 4/4 output
-  cases và 20 mẫu latency. Input P95 vượt target 500 ms. Chưa có commit hoặc PR.
+  cases và 20 mẫu latency. Input P95 vượt target 500 ms. Commit `4617642`, PR #3.
 - Cách kiểm tra: unit tests offline với fake engines/rails và đối chiếu từng
   fixture, output, warm-up, raw samples cùng percentile trong artifact.
 - Điều đã học: thành viên tự ghi sau khi review và thực hiện phần việc.
@@ -109,11 +108,10 @@ nộp; trải nghiệm cá nhân phải do chính thành viên viết.
 
 ### MAIPHANANHTUNG-2A202602980
 
-- Phần được giao: PR4 dự kiến, TEAM, blueprint, manifest và integration.
-- Thực tế đã làm: thành viên tự thực hiện phần được giao; thông tin chi tiết do
-  thành viên tự bổ sung cùng commit/PR.
-- Bằng chứng: A/B/C artifacts và ba reports live đã có; Phase C đạt fixture.
-  Chưa có commit hoặc PR.
+- Phần được giao: PR4, TEAM, blueprint, manifest và integration.
+- Thực tế đã làm: thành viên tự thực hiện phần được giao; xem commit/PR trong bảng
+  đóng góp.
+- Bằng chứng: A/B/C artifacts và ba reports live đã có; Phase C đạt fixture. Commit `9342dca`, merge `0dc21d2`; chưa có PR #4.
 - Cách kiểm tra: chạy checker cùng offline tests và đối chiếu báo cáo với JSON
   live sau khi các phase được phép chạy.
 - Điều đã học: thành viên tự ghi sau khi review và thực hiện phần việc.
