@@ -9,9 +9,7 @@ Trưởng nhóm/người nộp: Mai Phan Anh Tùng
 Ngày cập nhật bản local: 2026-10-12, Asia/Ho_Chi_Minh (UTC+07:00). Ngày lab và
 deadline chính thức cần đối chiếu thông báo lớp.
 
-Commit dùng để chấm: `2b2faa81d4e1ed1c9fd20d4b2e0f34ca35b1c225` (nhánh `main`,
-merge PR #4 từ nhánh `tung`). Commit ghi SHA này vào TEAM được tạo sau đó nên
-không nằm trong SHA trên.
+Commit dùng để chấm: `2b2faa81d4e1ed1c9fd20d4b2e0f34ca35b1c225`
 
 ## Thành viên và đóng góp (commit / PR thật)
 
