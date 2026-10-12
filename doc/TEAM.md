@@ -2,17 +2,16 @@
 
 Tên nhóm chính thức: The Fellowship of the Ring.
 
-Repo chung: thư mục local `K4-Track-3A-Day24-Eval-Guard`; URL remote chưa được
-cung cấp.
+Repo chung: thư mục local `K4-Track-3A-Day24-Eval-Guard`; remote `https://github.com/MinMinhMin/K4-Track-3A-Day24-Eval-Guard`.
 
 Trưởng nhóm/người nộp: Mai Phan Anh Tùng
 
 Ngày cập nhật bản local: 2026-10-12, Asia/Ho_Chi_Minh (UTC+07:00). Ngày lab và
 deadline chính thức cần đối chiếu thông báo lớp.
 
-Commit dùng để chấm: `0dc21d20ec64c1d2bed1f47e38fb1bc77237392a` (nhánh `main`,
-merge từ nhánh `tung`). Commit ghi SHA này vào TEAM được tạo sau đó nên không
-nằm trong SHA trên.
+Commit dùng để chấm: `2b2faa81d4e1ed1c9fd20d4b2e0f34ca35b1c225` (nhánh `main`,
+merge PR #4 từ nhánh `tung`). Commit ghi SHA này vào TEAM được tạo sau đó nên
+không nằm trong SHA trên.
 
 ## Thành viên và đóng góp (commit / PR thật)
 
@@ -21,12 +20,12 @@ nằm trong SHA trên.
 | 1 | NGUYỄN VŨ QUANG ANH | 2A202602805 | PR1: Phase A (RAGAS) và evaluator provenance (`m4_eval.py`, `phase_a_ragas.py`), artifact `ragas_50q.json`, `failure_clusters.md` | Commit `2fa8afa` (nhánh `quanganh`), PR #1, merge `6d6b64a` |
 | 2 | VŨ ĐỨC MINH | 2A202602895 | PR2: Phase B judge và calibration (`phase_b_judge.py`), artifact `judge_results.json`, `bias_report.md` | Commit `3afad9f` (nhánh `vuducminh`), PR #2, merge `034edc8` |
 | 3 | NGUYỄN NGỌC VĨNH | 2A202602833 | PR3: Phase C guardrails và latency (`phase_c_guard.py`, `guardrails/config.yml`), artifact `guard_results.json` | Commit `4617642` (nhánh `nguyenngocvinh`), PR #3, merge `b39e087` |
-| 4 | MAI PHAN ANH TÙNG | 2A202602980 | PR4: TEAM, blueprint và tích hợp (`TEAM.md`, `blueprint.md`, `PR_SEQUENCE.md`) | Commit `9342dca` (nhánh `tung`), merge trực tiếp `0dc21d2` vào `main`, commit ghi SHA `0519d01`; chưa mở PR #4 |
+| 4 | MAI PHAN ANH TÙNG | 2A202602980 | PR4: TEAM, blueprint và tích hợp (`TEAM.md`, `blueprint.md`, `PR_SEQUENCE.md`) | Commit `9342dca`, `47baf69`, `9cf61e5` (nhánh `tung`), PR #4, merge `2b2faa8`; trước đó `tung` được merge trực tiếp vào `main` ở `0dc21d2` |
 
 Nguồn: lịch sử Git của repo `MinMinhMin/K4-Track-3A-Day24-Eval-Guard`
 (`git log --all`); số PR lấy từ tiêu đề các merge commit. Tên tác giả trên Git
-của một số commit là tài khoản GitHub, không trùng họ tên trong bảng. Commit
-`0dc21d2` là bản dùng để chấm, được merge từ nhánh `tung` mà không qua PR.
+của một số commit là tài khoản GitHub, không trùng họ tên trong bảng. Các commit đầu của nhánh `tung` đã vào `main` trực tiếp ở `0dc21d2`; các
+commit sau đó đi qua PR #4.
 
 ## Môi trường và chuẩn bị
 
@@ -111,7 +110,7 @@ Từng thành viên cần tự bổ sung phần học được trước khi nhó
 - Phần được giao: PR4, TEAM, blueprint, manifest và integration.
 - Thực tế đã làm: thành viên tự thực hiện phần được giao; xem commit/PR trong bảng
   đóng góp.
-- Bằng chứng: A/B/C artifacts và ba reports live đã có; Phase C đạt fixture. Commit `9342dca`, merge `0dc21d2`; chưa có PR #4.
+- Bằng chứng: A/B/C artifacts và ba reports live đã có; Phase C đạt fixture. Commits `9342dca`, `47baf69`, `9cf61e5`, PR #4 (merge `2b2faa8`).
 - Cách kiểm tra: chạy checker cùng offline tests và đối chiếu báo cáo với JSON
   live sau khi các phase được phép chạy.
 - Điều đã học: thành viên tự ghi sau khi review và thực hiện phần việc.
