@@ -10,7 +10,8 @@ if hasattr(sys.stdout, "reconfigure"):
 if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8")
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from config import OPENAI_API_KEY, TEST_SET_PATH
+from config import (OPENAI_API_KEY, RAGAS_EMBEDDING_MODEL,
+                    RAGAS_EVALUATOR_MODEL, TEST_SET_PATH)
 
 METRIC_NAMES = (
     "faithfulness",
@@ -20,20 +21,16 @@ METRIC_NAMES = (
 )
 
 
-def _empty_evaluation(error: str | None = None) -> dict:
-    result = {name: 0.0 for name in METRIC_NAMES}
-    result["per_question"] = []
-    if error:
-        result["evaluation_error"] = error
-    return result
-
-
-def _score_or_zero(value) -> float:
+def _validated_score(value, metric: str) -> float:
+    if isinstance(value, bool):
+        raise ValueError(f"RAGAS metric {metric} must be a finite float in [0, 1].")
     try:
         score = float(value)
     except (TypeError, ValueError):
-        return 0.0
-    return score if math.isfinite(score) else 0.0
+        raise ValueError(f"RAGAS metric {metric} must be a finite float in [0, 1].") from None
+    if not math.isfinite(score) or not 0 <= score <= 1:
+        raise ValueError(f"RAGAS metric {metric} must be a finite float in [0, 1].")
+    return score
 
 
 def _contexts_or_fallback(value, fallback: list[str]) -> list[str]:
@@ -47,6 +44,12 @@ def _contexts_or_fallback(value, fallback: list[str]) -> list[str]:
     except TypeError:
         return list(fallback)
     return [str(context) for context in contexts if context is not None]
+
+
+def _result_value(result, name: str):
+    if isinstance(result, dict):
+        return result.get(name)
+    return getattr(result, name, None)
 
 
 @dataclass
@@ -69,19 +72,22 @@ def load_test_set(path: str = TEST_SET_PATH) -> list[dict]:
 
 def evaluate_ragas(questions: list[str], answers: list[str],
                    contexts: list[list[str]], ground_truths: list[str]) -> dict:
-    """Run RAGAS evaluation."""
-    lengths = {len(questions), len(answers), len(contexts), len(ground_truths)}
-    if len(lengths) != 1:
-        return _empty_evaluation("Input lists have different lengths")
+    """Run four RAGAS metrics with explicit, reportable evaluator models."""
+    lengths = (len(questions), len(answers), len(contexts), len(ground_truths))
+    if len(set(lengths)) != 1:
+        raise ValueError("RAGAS input lists must have the same length.")
     if not questions:
-        return _empty_evaluation()
+        raise ValueError("RAGAS evaluation requires at least one question.")
     if not OPENAI_API_KEY:
-        return _empty_evaluation("OPENAI_API_KEY is not configured")
+        raise RuntimeError("OPENAI_API_KEY is not configured for RAGAS evaluation.")
 
     try:
         from datasets import Dataset
         from ragas import evaluate
+        from ragas.embeddings import LangchainEmbeddingsWrapper
+        from ragas.llms import LangchainLLMWrapper
         from ragas.metrics import answer_relevancy, context_precision, context_recall, faithfulness
+        from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 
         dataset = Dataset.from_dict({
             "question": questions,
@@ -89,40 +95,65 @@ def evaluate_ragas(questions: list[str], answers: list[str],
             "contexts": contexts,
             "ground_truth": ground_truths,
         })
+        evaluator_llm = ChatOpenAI(
+            model=RAGAS_EVALUATOR_MODEL,
+            temperature=0,
+            api_key=OPENAI_API_KEY,
+        )
+        evaluator_embeddings = OpenAIEmbeddings(
+            model=RAGAS_EMBEDDING_MODEL,
+            api_key=OPENAI_API_KEY,
+        )
         result = evaluate(
             dataset,
             metrics=[faithfulness, answer_relevancy, context_precision, context_recall],
+            llm=LangchainLLMWrapper(evaluator_llm),
+            embeddings=LangchainEmbeddingsWrapper(evaluator_embeddings),
         )
         frame = result.to_pandas()
-        per_question = []
-        for index, row in frame.iterrows():
-            source_index = min(index, len(questions) - 1)
-            row_contexts = _contexts_or_fallback(
-                row.get("contexts", contexts[source_index]), contexts[source_index]
+        if len(frame) != len(questions):
+            raise ValueError(
+                f"RAGAS returned {len(frame)} rows for {len(questions)} input questions."
             )
+        per_question = []
+        for source_index, (_, row) in enumerate(frame.iterrows()):
+            for field, source_values in (
+                ("question", questions),
+                ("answer", answers),
+                ("ground_truth", ground_truths),
+            ):
+                if row.get(field) != source_values[source_index]:
+                    raise ValueError(f"RAGAS returned rows out of order at {field}.")
+            row_contexts = _contexts_or_fallback(row.get("contexts"), contexts[source_index])
             per_question.append(EvalResult(
-                question=str(row.get("question", questions[source_index])),
-                answer=str(row.get("answer", answers[source_index])),
+                question=questions[source_index],
+                answer=answers[source_index],
                 contexts=row_contexts,
-                ground_truth=str(row.get("ground_truth", ground_truths[source_index])),
-                faithfulness=_score_or_zero(row.get("faithfulness", 0.0)),
-                answer_relevancy=_score_or_zero(row.get("answer_relevancy", 0.0)),
-                context_precision=_score_or_zero(row.get("context_precision", 0.0)),
-                context_recall=_score_or_zero(row.get("context_recall", 0.0)),
+                ground_truth=ground_truths[source_index],
+                faithfulness=_validated_score(row.get("faithfulness"), "faithfulness"),
+                answer_relevancy=_validated_score(row.get("answer_relevancy"), "answer_relevancy"),
+                context_precision=_validated_score(row.get("context_precision"), "context_precision"),
+                context_recall=_validated_score(row.get("context_recall"), "context_recall"),
             ))
 
-        aggregates = {
-            name: (
-                sum(getattr(item, name) for item in per_question) / len(per_question)
-                if per_question else 0.0
-            )
-            for name in METRIC_NAMES
+        if len(per_question) != len(questions):
+            raise ValueError("RAGAS returned an incomplete per-question result.")
+        aggregates = {name: sum(getattr(item, name) for item in per_question) / len(per_question)
+                      for name in METRIC_NAMES}
+        return {
+            **aggregates,
+            "per_question": per_question,
+            "metadata": {"evaluator_models": sorted({
+                RAGAS_EVALUATOR_MODEL,
+                RAGAS_EMBEDDING_MODEL,
+            })},
         }
-        return {**aggregates, "per_question": per_question}
     except Exception as exc:
-        error = f"RAGAS evaluation failed ({type(exc).__name__})"
-        print(f"  ⚠️  {error}", flush=True)
-        return _empty_evaluation(error)
+        if isinstance(exc, (ValueError, RuntimeError)) and str(exc).startswith((
+            "RAGAS returned", "RAGAS metric", "RAGAS evaluation requires", "OPENAI_API_KEY"
+        )):
+            raise
+        raise RuntimeError(f"RAGAS evaluation failed ({type(exc).__name__}).") from exc
 
 
 def failure_analysis(eval_results: list[EvalResult], bottom_n: int = 10) -> list[dict]:
@@ -150,7 +181,7 @@ def failure_analysis(eval_results: list[EvalResult], bottom_n: int = 10) -> list
 
     analyses = []
     for result in eval_results:
-        scores = {name: _score_or_zero(getattr(result, name, 0.0)) for name in METRIC_NAMES}
+        scores = {name: _validated_score(_result_value(result, name), name) for name in METRIC_NAMES}
         worst_metric = min(METRIC_NAMES, key=scores.get)
         average_score = sum(scores.values()) / len(METRIC_NAMES)
         diagnosis, suggested_fix = diagnostic_tree[worst_metric]
@@ -177,7 +208,7 @@ def save_report(results: dict, failures: list[dict], path: str = "reports/ragas_
         for item in results.get("per_question", [])
     ]
     report = {
-        "aggregate": {name: _score_or_zero(results.get(name, 0.0)) for name in METRIC_NAMES},
+        "aggregate": {name: _validated_score(results.get(name), name) for name in METRIC_NAMES},
         "num_questions": len(per_question),
         "per_question": per_question,
         "failures": failures,

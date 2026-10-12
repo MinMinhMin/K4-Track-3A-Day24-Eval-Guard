@@ -18,6 +18,16 @@ def test_pairwise_uses_json_judge(openai_client):
     assert call["response_format"] == {"type":"json_object"}
 
 
+@pytest.mark.parametrize("payload", [
+    "not json",
+    {"winner":"C","reasoning":"bad winner","scores":{"A":.9,"B":.2}},
+    {"winner":"A","reasoning":" ","scores":{"A":.9,"B":.2}},
+    {"winner":"A","reasoning":"ok","scores":{"A":True,"B":.2}},
+    {"winner":"A","reasoning":"ok","scores":{"A":1.1,"B":.2}},
+    {"winner":"tie","reasoning":"ok","scores":{"A":.9}},
+])
+
+
 @pytest.mark.parametrize("second_raw,expected,consistent", [("B","A",True),("A","tie",False)])
 def test_swap_conversion_and_calls(monkeypatch,second_raw,expected,consistent):
     mocked = Mock(side_effect=[
@@ -38,6 +48,11 @@ def test_swap_conversion_and_calls(monkeypatch,second_raw,expected,consistent):
     ([1,1,0,0],[1,0,1,0],0)])
 def test_kappa_exact(judge,human,expected):
     assert phase.cohen_kappa(judge,human) == pytest.approx(expected)
+
+
+@pytest.mark.parametrize("judge,human", [
+    ([1], []), ([], []), ([True], [1]), ([0.0], [0]), ([2], [0]), (["1"], [1]),
+])
 
 
 def test_bias_known_counts():

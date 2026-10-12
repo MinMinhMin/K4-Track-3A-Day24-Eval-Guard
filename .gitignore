@@ -7,6 +7,12 @@ __pycache__/
 .venv*/
 venv/
 .pytest_cache/
+.agents/
+.aws/
+.codex/
+.superpowers/
+docs/superpowers/
+pr_snapshots/
 .env.*
 !.env.example
 # artifacts/*.json là bằng chứng bắt buộc của bài nộp.
