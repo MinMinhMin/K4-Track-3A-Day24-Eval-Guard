@@ -5,7 +5,7 @@ Tên nhóm chính thức: The Fellowship of the Ring.
 Repo chung: thư mục local `K4-Track-3A-Day24-Eval-Guard`; URL remote chưa được
 cung cấp.
 
-Trưởng nhóm/người nộp: chưa được chỉ định.
+Trưởng nhóm/người nộp: Mai Phan Anh Tùng
 
 Ngày cập nhật bản local: 2026-10-12, Asia/Ho_Chi_Minh (UTC+07:00). Ngày lab và
 deadline chính thức cần đối chiếu thông báo lớp.
