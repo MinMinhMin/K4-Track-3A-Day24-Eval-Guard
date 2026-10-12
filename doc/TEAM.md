@@ -9,7 +9,7 @@ Trưởng nhóm/người nộp: Mai Phan Anh Tùng
 Ngày cập nhật bản local: 2026-10-12, Asia/Ho_Chi_Minh (UTC+07:00). Ngày lab và
 deadline chính thức cần đối chiếu thông báo lớp.
 
-Commit dùng để chấm: `2b2faa81d4e1ed1c9fd20d4b2e0f34ca35b1c225`
+Commit dùng để chấm: `a5b6e237425f6fa427d0abd4fd665ffbb7dbb6df`
 
 ## Thành viên và đóng góp (commit / PR thật)
 
